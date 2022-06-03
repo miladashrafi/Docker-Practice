@@ -1,0 +1,31 @@
+version: '3.6'
+services:
+  web:
+    image: 'gitlab/gitlab-ee:latest'
+    restart: unless-stopped
+    hostname: 'gitlab'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://localhost'
+        # Add any other gitlab.rb configuration here, each on its own line
+    ports:
+      - '8585:80'
+      - '8586:443'
+      - '22:22'
+    volumes:
+      - 'c:\gitlab\config:/etc/gitlab'
+      - 'c:\gitlab\logs:/var/log/gitlab'
+      - 'c:\gitlab\data:/var/opt/gitlab'
+    shm_size: '256m'
+
+  runner:
+    image: 'gitlab/gitlab-runner:latest'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /srv/gitlab-runner/config:/etc/gitlab-runner
+    restart: unless-stopped
+
+
+
+
+# docker exec -it gitlab-runner-1 gitlab-runner register --non-interactive --clone-url "http://host.docker.internal:8585" --url "http://host.docker.internal:8585"   --registration-token "8bKeVhTQysqDcbyyG6vk"   --executor "docker"   --docker-image alpine:latest   --description "docker-runner"   --maintenance-note "Free-form maintainer notes about this runner"   --tag-list "docker"   --run-untagged="true"   --locked="false"   --access-level="not_protected"
