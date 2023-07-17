@@ -1,0 +1,55 @@
+# Author: Milad Ashrafi (milad.ashrafi@gmail.com)
+version: "3"
+services:
+  business-central:
+    container_name: business-central
+    image: quay.io/kiegroup/business-central-workbench-showcase:7.73.0.Final
+    expose:
+      - 8080
+      - 8001
+      - 8443
+    ports:
+      - 8080:8080 # STAGE
+      - 8001:8001 # STAGE
+      - 8443:8443 # STAGE
+      # - 8080:8080 # PRODUCTION
+      # - 8001:8001 # PRODUCTION
+      # - 8443:8443 # PRODUCTION
+    volumes:
+      - "/ruleengine/files:/opt/jboss/wildfly/bin/.niogit:Z" # SERVER
+      # - "C:/rule-engine/Files:/opt/jboss/wildfly/bin/.niogit:Z" # LOCAL
+    environment:
+      JAVA_OPTS: "-Xms8g -Xmx8g -XX:MetaspaceSize=1g -XX:MaxMetaspaceSize=2g
+        -Djava.net.preferIPv4Stack=true -Dfile.encoding=UTF-8
+        -Dorg.kie.demo=false -Dorg.kie.example=false
+        -Derrai.bus.enable_sse_support=false"
+      TZ: Asia/Tehran
+    restart: always
+  kie-server:
+    container_name: kie-server
+    image: quay.io/kiegroup/kie-server-showcase:7.73.0.Final
+    ports:
+      - 8180:8080 # STAGE
+      - 8007:8001 # STAGE
+      # - 8180:8080 # PRODUCTION
+      # - 8007:8001 # PRODUCTION
+    restart: always
+    environment:
+      KIE_SERVER_ID: Stage # STAGE
+      # KIE_SERVER_ID: Production # PRODUCTION
+      
+      # KIE_SERVER_LOCATION: http://host.docker.internal:8180/kie-server/services/rest/server # LOCAL
+      # KIE_SERVER_CONTROLLER: http://host.docker.internal:8080/business-central/rest/controller # LOCAL
+      # KIE_MAVEN_REPO: http://host.docker.internal:8080/business-central/maven2 # LOCAL
+
+      KIE_SERVER_LOCATION: http://192.168.100.1:8180/kie-server/services/rest/server # STAGE SERVER
+      KIE_SERVER_CONTROLLER: http://192.168.100.1:8080/business-central/rest/controller # STAGE SERVER
+      KIE_MAVEN_REPO: http://192.168.100.1:8080/business-central/maven2 # STAGE SERVER
+      
+      # KIE_SERVER_LOCATION: http://prod-host:8180/kie-server/services/rest/server # PRODUCTION SERVER
+      # KIE_SERVER_CONTROLLER: http://prod-host:8080/business-central/rest/controller # PRODUCTION SERVER
+      # KIE_MAVEN_REPO: http://prod-host:8080/business-central/maven2 # PRODUCTION SERVER
+
+      TZ: Asia/Tehran
+    depends_on:
+      - business-central
